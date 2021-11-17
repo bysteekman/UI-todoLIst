@@ -1,12 +1,17 @@
 "use strict";
 
 class TodoItem {
-    constructor(id, title, description, dueDate, done) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.dueDate = dueDate;
-        this.done = done;
+    constructor(titleOrObject, description, dueDate, done, id) {
+        if (typeof titleOrObject === 'object') {
+            titleOrObject.dueDate = new Date(titleOrObject.dueDate);
+            Object.assign(this, titleOrObject);
+        } else {
+            this.title = titleOrObject;
+            this.description = description;
+            this.dueDate = dueDate;
+            this.done = done;
+            this.id = id;
+        }
     }
 }
 const monthNames = [
@@ -17,13 +22,15 @@ const monthNames = [
 ];
 
 const listElement = document.getElementById('tasks');
+const taskForm = document.forms['task'];
 
 let now = new Date();
+let lastId = 1;
 let todoList = [
-    new TodoItem(1, 'First task', '', now, true),
-    new TodoItem(2, 'Second task', null, now),
-    new TodoItem(3, 'Third task', 'Very important task, you must do it because you will be fired, this is simple task for you', new Date("2021-04-01")),
-    new TodoItem(4, 'Fourth task', 'Go to holy guys, ask them to fix a mouse'),
+    new TodoItem('First task', '', now, false, 1),
+    // new TodoItem(2, 'Second task', null, now),
+    // new TodoItem(3, 'Third task', 'Very important task, you must do it because you will be fired, this is simple task for you', new Date("2021-04-01")),
+    // new TodoItem(4, 'Fourth task', 'Go to holy guys, ask them to fix a mouse'),
 ]
 
 let deleteElement = (event) => {
@@ -68,12 +75,25 @@ let makeItemDone = (event) => {
         }
         const task = todoList.find(item => checkbox.id == item.id);
         task.done = checkbox.checked;
+        console.log(task);
     }
 };
 
 listElement.addEventListener('click', deleteElement);
 listElement.addEventListener('click', makeItemDone);
 listElement.addEventListener('click', setOption);
+
+taskForm.addEventListener('submit', (event) => {
+    ++lastId;
+    event.preventDefault();
+    const formData = new FormData(taskForm);
+    const task = new TodoItem(Object.fromEntries(formData.entries()));
+    task.id = lastId;
+    todoList.push(task);
+    console.log(task)
+    pageOutput(task);
+    taskForm.reset();
+});
 
 function pageOutput(item) {
     listElement.innerHTML += todoItemOutput(item);
@@ -84,13 +104,13 @@ function todoItemOutput(item) {
 
     let correctFormatDate = dueDate ? `(${monthNames[dueDate.getMonth()]} ${dueDate.getDate()})` : '';
     let doneCheck = done ? 'checked' : '';
-    let doneDiv = done ? 'completed_div' : '';
+    let doneTask = done ? 'completed_task' : '';
     let invalidDate = dueDate < now ? ' invalid_date' : '';
     let descriptionNotNull = description != null ? description : '';
     let completedTask = done ? 'style="display: none;"' : '';
 
     let output = `
-    <div id="task_${id}" class="task ${doneDiv}" ${completedTask}>
+    <div id="task_${id}" class="task ${doneTask}" ${completedTask}>
         <p>
             <input type="checkbox" id="${id}" name="itemCheckbox" ${doneCheck}> 
             <em class="task_status">${title}</em>
