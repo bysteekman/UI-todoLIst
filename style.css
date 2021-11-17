@@ -13,7 +13,7 @@ body {
     align-items: center;
 }
 
-#tasks div {
+.task {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -28,7 +28,7 @@ body {
     border-radius: 10px;
     border-width: 4px;
 }
-#tasks div:hover {
+.task:hover {
     opacity: 1;
 }
 div:hover span {
@@ -70,7 +70,7 @@ input[type="checkbox"]:checked ~ .date.invalid_date {
     width: 200px;
     height: 50px;
 }
-.hide-done .completed_task{
+.hide .completed_task{
     display: none;
 }
 .status_button:hover {
@@ -78,12 +78,6 @@ input[type="checkbox"]:checked ~ .date.invalid_date {
 }
 .status_button::after {
     margin-top: 18px;
-}
-.status_button.not_completed::before {
-    content: "Get All Tasks";
-}
-.status_button.all_tasks::before {
-    content: "Get Actual Tasks";
 }
 .date {
     color: white;

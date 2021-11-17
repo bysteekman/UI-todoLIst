@@ -27,7 +27,7 @@ const taskForm = document.forms['task'];
 var now = new Date();
 let lastId = 2;
 let todoList = [
-    new TodoItem('First task', '', now, false, 1),
+    new TodoItem('First task', '', now, true, 1),
     // new TodoItem(2, 'Second task', null, now),
     new TodoItem('Third task', 'Very important task, you must do it because you will be fired, this is simple task for you', new Date("2021-04-01"), false, 2),
     // new TodoItem(4, 'Fourth task', 'Go to holy guys, ask them to fix a mouse'),
@@ -53,21 +53,16 @@ let deleteElement = (event) => {
     }
 };
 
-function displayDiv(value) {
-    let divElements = listElement.querySelectorAll('.completed_div');
-    for (let i = 0; i < divElements.length; i++) {
-        // console.log(divElements[i]);
-        divElements[i].setAttribute('style', `display: ${value};`);
-    }
-};
-
 let setOption = (event) => {
     const button = event.target;
-    if (button.tagName === 'INPUT' && button.type === 'radio') {
-        if (button.id === 'all_tasks') {
-            displayDiv('flex');
+    if (button.tagName === 'BUTTON' && button.id === 'button_for_task') {
+        let tasks = button.closest('#tasks');
+        if (tasks.classList.contains('hide')) {
+            tasks.classList.remove('hide');
+            button.innerHTML = 'Get Actual Tasks';
         } else {
-            displayDiv('none');
+            tasks.classList.add('hide');
+            button.innerHTML = 'Get All Tasks';
         }
     }
 };
@@ -76,12 +71,7 @@ let makeItemDone = (event) => {
     let checkbox = event.target;
     if (checkbox.tagName === 'INPUT' && checkbox.type === 'checkbox') {
         let taskNode = checkbox.closest('.task');
-        taskNode.classList.toggle('completed_div', checkbox.checked)
-        if (checkbox.checked) {
-            if (document.getElementById('not_completed').checked) {
-                taskNode.setAttribute('style', 'display: none;');
-            }
-        }
+        taskNode.classList.toggle('completed_task', checkbox.checked)
         const task = todoList.find(item => checkbox.id == item.id);
         task.done = checkbox.checked;
         console.log(task);
@@ -113,13 +103,12 @@ function todoItemOutput(item) {
 
     let correctFormatDate = dueDate ? `(${monthNames[dueDate.getMonth()]} ${dueDate.getDate()})` : '';
     let doneCheck = done ? 'checked' : '';
-    let doneTask = done ? 'completed_task' : '';
+    let doneTask = done ? 'completed_task ' : '';
     let invalidDate = dueDate < now ? ' invalid_date' : '';
     let descriptionNotNull = description != null ? description : '';
-    let completedTask = done ? 'style="display: none;"' : '';
 
     let output = `
-    <div id="task_${id}" class="task ${doneTask}" ${completedTask}>
+    <div id="task_${id}" class="${doneTask}task">
         <p>
             <input type="checkbox" id="${id}" name="itemCheckbox" ${doneCheck}> 
             <em class="task_status">${title}</em>
