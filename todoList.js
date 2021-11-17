@@ -1,7 +1,7 @@
 "use strict";
 
 class TodoItem {
-    constructor(id, title, description, dueDate, done){
+    constructor(id, title, description, dueDate, done) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -14,7 +14,7 @@ const monthNames = [
     "Apr", "May", "Jun", "Jul",
     "Aug", "Sept", "Oct",
     "Nov", "Dec"
-  ];
+];
 
 const listElement = document.getElementById('tasks');
 
@@ -27,17 +27,18 @@ let todoList = [
 ]
 
 let deleteElement = (event) => {
-    const target = event.target;
-    if(target.tagName === 'SPAN') {
-        let divToDelete = document.getElementById(`${target.title}`);
-        let index = todoList.indexOf(divToDelete);
+    const deleteButton = event.target;
+    if (deleteButton.tagName === 'SPAN') {
+        let taskElement = document.getElementById(deleteButton.dataset.id);
+        // звернути увагу на елемент таск
+        let index = todoList.indexOf(taskElement);
         todoList.splice(index, 1);
-        divToDelete.remove();
+        taskElement.remove();
     }
 };
 
-function displayDiv (value) {
-    let divElements = listElement.getElementsByClassName('completed_div');
+function displayDiv(value) {
+    let divElements = listElement.querySelectorAll('.completed_div');
     for (let i = 0; i < divElements.length; i++) {
         // console.log(divElements[i]);
         divElements[i].setAttribute('style', `display: ${value};`);
@@ -45,9 +46,9 @@ function displayDiv (value) {
 };
 
 let setOption = (event) => {
-    const target = event.target;
-    if (target.tagName === 'INPUT' && target.type === 'radio') {
-        if (target.id === 'all_tasks') {
+    const view = event.target;
+    if (view.tagName === 'INPUT' && view.type === 'radio') {
+        if (view.id === 'all_tasks') {
             displayDiv('flex');
         } else {
             displayDiv('none');
@@ -56,19 +57,17 @@ let setOption = (event) => {
 };
 
 let makeItemDone = (event) => {
-    let target = event.target;
-    if(target.tagName === 'INPUT' && target.type === 'checkbox') {
-        if (target.checked) {
-            let div = document.getElementById(`task_${target.id}`);
-            div.classList.add('completed_div');
-            if(document.getElementById('not_completed').checked) {
-                div.setAttribute('style', 'display: none;');
+    let checkbox = event.target;
+    if (checkbox.tagName === 'INPUT' && checkbox.type === 'checkbox') {
+        let taskNode = checkbox.closest('.task');
+        taskNode.classList.toggle('completed_div', checkbox.checked)
+        if (checkbox.checked) {
+            if (document.getElementById('not_completed').checked) {
+                taskNode.setAttribute('style', 'display: none;');
             }
-        } else {
-            document.getElementById(`task_${target.id}`).classList.remove("completed_div");
         }
-        todoList.map(item => target.id == item.id ? item.done = target.checked : item);
-        // todoList.map(item => console.log(item));
+        const task = todoList.find(item => checkbox.id == item.id);
+        task.done = checkbox.checked;
     }
 };
 
@@ -76,21 +75,30 @@ listElement.addEventListener('click', deleteElement);
 listElement.addEventListener('click', makeItemDone);
 listElement.addEventListener('click', setOption);
 
-function pageOutput (item) {
+function pageOutput(item) {
     listElement.innerHTML += todoItemOutput(item);
 }
 
 function todoItemOutput(item) {
     const { id, title, description, dueDate, done } = item;
-    
-    let correctFormatDate = (dueDate != null && dueDate != undefined && dueDate != '') ? `(${monthNames[dueDate.getMonth()]} ${dueDate.getDate()})` : '';
+
+    let correctFormatDate = dueDate ? `(${monthNames[dueDate.getMonth()]} ${dueDate.getDate()})` : '';
     let doneCheck = done ? 'checked' : '';
     let doneDiv = done ? 'completed_div' : '';
     let invalidDate = dueDate < now ? ' invalid_date' : '';
     let descriptionNotNull = description != null ? description : '';
     let completedTask = done ? 'style="display: none;"' : '';
 
-    let output = `<div id="task_${id}" class="${doneDiv}" ${completedTask}><p><input type="checkbox" id="${id}" name="itemCheckbox" ${doneCheck}> <em class="task_status">${title}</em><em class="date${invalidDate}">${correctFormatDate}</em></p><p class="task_description">${descriptionNotNull}</p><span title="task_${id}"></span></div>`;
+    let output = `
+    <div id="task_${id}" class="task ${doneDiv}" ${completedTask}>
+        <p>
+            <input type="checkbox" id="${id}" name="itemCheckbox" ${doneCheck}> 
+            <em class="task_status">${title}</em>
+            <em class="date${invalidDate}">${correctFormatDate}</em>
+        </p>
+        <p class="task_description">${descriptionNotNull}</p>
+        <span data-id="task_${id}"></span>
+    </div>`;
     return output;
 }
 
