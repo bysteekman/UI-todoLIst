@@ -3,7 +3,7 @@
 class TodoItem {
     constructor(titleOrObject, description, dueDate, done, id) {
         if (typeof titleOrObject === 'object') {
-            convertInputDate(titleOrObject);
+            convertInputDateAndCheckValidYear(titleOrObject);
             Object.assign(this, titleOrObject);
         } else {
             this.title = titleOrObject;
@@ -25,30 +25,31 @@ const listElement = document.getElementById('tasks');
 const taskForm = document.forms['task'];
 
 var now = new Date();
-let lastId = 1;
+let lastId = 2;
 let todoList = [
     new TodoItem('First task', '', now, false, 1),
     // new TodoItem(2, 'Second task', null, now),
-    // new TodoItem(3, 'Third task', 'Very important task, you must do it because you will be fired, this is simple task for you', new Date("2021-04-01")),
+    new TodoItem('Third task', 'Very important task, you must do it because you will be fired, this is simple task for you', new Date("2021-04-01"), false, 2),
     // new TodoItem(4, 'Fourth task', 'Go to holy guys, ask them to fix a mouse'),
 ]
 
-function convertInputDate (form) {
+function convertInputDateAndCheckValidYear (form) {
     let inputDate = new Date(form.dueDate);
-    if (inputDate.getFullYear() < now.getFullYear()) {
+    if (inputDate != null && inputDate.getFullYear() < now.getFullYear()) {
         inputDate.setFullYear(now.getFullYear());
+        form.dueDate = inputDate;
+        return form;
     }
-    form.dueDate = inputDate;
     return form;
 }
 let deleteElement = (event) => {
     const deleteButton = event.target;
     if (deleteButton.tagName === 'SPAN') {
-        let taskElement = document.getElementById(deleteButton.dataset.id);
+        let task = deleteButton.closest(`#${deleteButton.dataset.id}`)
         // звернути увагу на елемент таск
-        let index = todoList.indexOf(taskElement);
-        todoList.splice(index, 1);
-        taskElement.remove();
+        // let index = todoList.indexOf(taskElement);
+        // todoList.splice(index, 1);
+        task.remove();
     }
 };
 
@@ -61,9 +62,9 @@ function displayDiv(value) {
 };
 
 let setOption = (event) => {
-    const view = event.target;
-    if (view.tagName === 'INPUT' && view.type === 'radio') {
-        if (view.id === 'all_tasks') {
+    const button = event.target;
+    if (button.tagName === 'INPUT' && button.type === 'radio') {
+        if (button.id === 'all_tasks') {
             displayDiv('flex');
         } else {
             displayDiv('none');

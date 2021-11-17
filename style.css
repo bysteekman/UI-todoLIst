@@ -59,6 +59,32 @@ input[type="checkbox"]:checked ~ .date.invalid_date {
     justify-content: center;
     color:white;
 }
+.status_button {
+    margin-top: 16px;
+    background-color: black;
+    color: white;
+    border: 2px solid white;
+    font-size: 16px;
+    opacity: 0.8;
+    cursor: pointer;
+    width: 200px;
+    height: 50px;
+}
+.hide-done .completed_task{
+    display: none;
+}
+.status_button:hover {
+    opacity: 1;
+}
+.status_button::after {
+    margin-top: 18px;
+}
+.status_button.not_completed::before {
+    content: "Get All Tasks";
+}
+.status_button.all_tasks::before {
+    content: "Get Actual Tasks";
+}
 .date {
     color: white;
     opacity: 0.8;
