@@ -3,7 +3,7 @@
 class TodoItem {
     constructor(titleOrObject, description, dueDate, done, id) {
         if (typeof titleOrObject === 'object') {
-            titleOrObject.dueDate = new Date(titleOrObject.dueDate);
+            convertInputDate(titleOrObject);
             Object.assign(this, titleOrObject);
         } else {
             this.title = titleOrObject;
@@ -24,7 +24,7 @@ const monthNames = [
 const listElement = document.getElementById('tasks');
 const taskForm = document.forms['task'];
 
-let now = new Date();
+var now = new Date();
 let lastId = 1;
 let todoList = [
     new TodoItem('First task', '', now, false, 1),
@@ -33,6 +33,14 @@ let todoList = [
     // new TodoItem(4, 'Fourth task', 'Go to holy guys, ask them to fix a mouse'),
 ]
 
+function convertInputDate (form) {
+    let inputDate = new Date(form.dueDate);
+    if (inputDate.getFullYear() < now.getFullYear()) {
+        inputDate.setFullYear(now.getFullYear());
+    }
+    form.dueDate = inputDate;
+    return form;
+}
 let deleteElement = (event) => {
     const deleteButton = event.target;
     if (deleteButton.tagName === 'SPAN') {
