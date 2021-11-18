@@ -86,7 +86,8 @@ function createTask(task) {
         },
         body: JSON.stringify(task)
     })
-    .then(response => response.json());
+    .then(response => response.json())
+    .catch(createError);
 }
 
 function changeTaskStatus (id, done) {
@@ -99,7 +100,8 @@ function changeTaskStatus (id, done) {
         body: JSON.stringify({
             'done': done
         })
-    });
+    })
+    .catch(changeError);
 }
 
 function deleteTask (id) {
@@ -111,6 +113,18 @@ function deleteTask (id) {
 
 function checkDateOutput (value){
     return value < 10 ? '0' + value : value;
+}
+
+function handleError () {
+    listElement.innerHTML += 'Can`t load task list :(';
+}
+
+function changeError () {
+    alert('Can`t change task :(');
+}
+
+function createError () {
+    alert('Can`t create task');
 }
 
 function todoItemOutput(item) {
@@ -151,4 +165,5 @@ taskForm.addEventListener('submit', (event) => {
 
 fetch('https://localhost:5001/api/lists/6/tasks?all=true')
     .then(response => response.json())
-    .then(tasks => tasks.forEach(pageOutput));
+    .then(tasks => tasks.forEach(pageOutput))
+    .catch(handleError);
