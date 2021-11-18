@@ -3,7 +3,7 @@
 class TodoItem {
     constructor(titleOrObject, description, dueDate, done, id) {
         if (typeof titleOrObject === 'object') {
-            convertInputDateAndCheckValidYear(titleOrObject);
+            convertInputDate(titleOrObject);
             Object.assign(this, titleOrObject);
         } else {
             this.title = titleOrObject;
@@ -33,22 +33,18 @@ let todoList = [
     // new TodoItem(4, 'Fourth task', 'Go to holy guys, ask them to fix a mouse'),
 ]
 
-function convertInputDateAndCheckValidYear (form) {
+function convertInputDate (form) {
     let inputDate = new Date(form.dueDate);
-    if (inputDate != null && inputDate.getFullYear() < now.getFullYear()) {
-        inputDate.setFullYear(now.getFullYear());
-        form.dueDate = inputDate;
-        return form;
-    }
+    form.dueDate = inputDate;
     return form;
 }
 let deleteElement = (event) => {
     const deleteButton = event.target;
     if (deleteButton.tagName === 'SPAN') {
-        let task = deleteButton.closest(`#${deleteButton.dataset.id}`)
-        // звернути увагу на елемент таск
-        // let index = todoList.indexOf(taskElement);
-        // todoList.splice(index, 1);
+        let task = deleteButton.closest('.task')
+        let todoItem = todoList.find(item => task.id == item.id);
+        let index = todoList.indexOf(todoItem);
+        todoList.splice(index, 1);
         task.remove();
     }
 };
@@ -72,9 +68,8 @@ let makeItemDone = (event) => {
     if (checkbox.tagName === 'INPUT' && checkbox.type === 'checkbox') {
         let taskNode = checkbox.closest('.task');
         taskNode.classList.toggle('completed_task', checkbox.checked)
-        const task = todoList.find(item => checkbox.id == item.id);
+        const task = todoList.find(item => taskNode.id == item.id);
         task.done = checkbox.checked;
-        console.log(task);
     }
 };
 
@@ -89,13 +84,14 @@ taskForm.addEventListener('submit', (event) => {
     const task = new TodoItem(Object.fromEntries(formData.entries()));
     task.id = lastId;
     todoList.push(task);
-    console.log(task)
+    // console.log(task);
     pageOutput(task);
     taskForm.reset();
 });
 
 function pageOutput(item) {
-    listElement.innerHTML += todoItemOutput(item);
+    let taskList = listElement.querySelector('.task_list');
+    taskList.innerHTML += todoItemOutput(item);
 }
 
 function todoItemOutput(item) {
@@ -103,19 +99,19 @@ function todoItemOutput(item) {
 
     let correctFormatDate = dueDate ? `(${monthNames[dueDate.getMonth()]} ${dueDate.getDate()})` : '';
     let doneCheck = done ? 'checked' : '';
-    let doneTask = done ? 'completed_task ' : '';
-    let invalidDate = dueDate < now ? ' invalid_date' : '';
+    let doneTask = done ? ' completed_task' : '';
+    let overdueDate = dueDate < now ? ' overdue_date' : '';
     let descriptionNotNull = description != null ? description : '';
 
     let output = `
-    <div id="task_${id}" class="${doneTask}task">
+    <div id="${id}" class="task${doneTask}">
         <p>
-            <input type="checkbox" id="${id}" name="itemCheckbox" ${doneCheck}> 
+            <input type="checkbox" name="itemCheckbox" ${doneCheck}> 
             <em class="task_status">${title}</em>
-            <em class="date${invalidDate}">${correctFormatDate}</em>
+            <em class="date${overdueDate}">${correctFormatDate}</em>
         </p>
         <p class="task_description">${descriptionNotNull}</p>
-        <span data-id="task_${id}"></span>
+        <span></span>
     </div>`;
     return output;
 }

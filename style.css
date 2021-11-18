@@ -1,4 +1,6 @@
 body {
+    padding: 0;
+    margin: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -20,7 +22,8 @@ body {
     position: relative;
     min-height: 104px;
     width: 424px;
-    margin-top: 15px;
+    margin-top: 16px;
+    margin-right: 16px;
     padding: 30px;
     border-color:white;
     opacity: 0.60;
@@ -47,10 +50,10 @@ input[type="checkbox"]:checked ~ .task_status {
     text-decoration: line-through;
     color: grey;
 }
-.date.invalid_date {
+.date.overdue_date {
     color: red;
 }
-input[type="checkbox"]:checked ~ .date.invalid_date {
+input[type="checkbox"]:checked ~ .date.overdue_date {
     color: white;
 }
 .task_description {
@@ -58,6 +61,12 @@ input[type="checkbox"]:checked ~ .date.invalid_date {
     display: flex;
     justify-content: center;
     color:white;
+}
+.task_list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
 }
 .status_button {
     margin-top: 16px;
