@@ -1,6 +1,6 @@
 "use strict";
 
-let tasksEndpoint = "https://localhost:5001/api/lists/6/tasks?all=true";
+let tasksEndpoint = "https://localhost:5001/api/lists/6/tasks";
 
 class TodoItem {
     constructor(id, title, description, dueDate, done) {
@@ -67,9 +67,8 @@ let makeItemDone = (event) => {
     if (checkbox.tagName === 'INPUT' && checkbox.type === 'checkbox') {
         let taskNode = checkbox.closest('.task');
         taskNode.classList.toggle('completed_task', checkbox.checked)
-        const task = todoList.find(item => taskNode.id == item.id);
-        task.done = checkbox.checked;
-        console.log(task.done)
+        // const task = todoList.find(item => taskNode.id == item.id);
+        // task.done = checkbox.checked;
     }
 };
 
@@ -78,6 +77,18 @@ function pageOutput(item) {
     let taskList = listElement.querySelector('.task_list');
     taskList.innerHTML += todoItemOutput(task);
 }
+
+function createTask(task) {
+    return fetch(tasksEndpoint, {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json'
+        },
+        body: JSON.stringify(task)
+    })
+    .then(response => response.json());
+}
+
 function checkDateOutput (value){
     return value < 10 ? '0' + value : value;
 }
@@ -104,22 +115,20 @@ function todoItemOutput(item) {
     return output;
 }
 
-todoList.forEach(pageOutput);
+// todoList.forEach(pageOutput);
 
 listElement.addEventListener('click', deleteElement);
 listElement.addEventListener('click', makeItemDone);
 listElement.addEventListener('click', setOption);
 taskForm.addEventListener('submit', (event) => {
-    ++lastId;
     event.preventDefault();
     const formData = new FormData(taskForm);
     const task = new TodoItem(Object.fromEntries(formData.entries()));
-    task.id = lastId;
-    todoList.push(task);
-    pageOutput(task);
-    taskForm.reset();
+    createTask(task)
+        .then(pageOutput, alert)
+        .then(_ => taskForm.reset());
 });
 
-fetch(tasksEndpoint)
+fetch('https://localhost:5001/api/lists/6/tasks?all=true')
     .then(response => response.json())
     .then(tasks => tasks.forEach(pageOutput));
