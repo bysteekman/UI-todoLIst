@@ -34,8 +34,11 @@ let todoList = [
 ]
 
 function convertInputDate (form) {
-    let inputDate = new Date(form.dueDate);
-    form.dueDate = inputDate;
+    if(form.dueDate) {
+        form.dueDate = new Date(form.dueDate);
+        return form;
+    }
+    form.dueDate = null;
     return form;
 }
 let deleteElement = (event) => {
@@ -84,7 +87,6 @@ taskForm.addEventListener('submit', (event) => {
     const task = new TodoItem(Object.fromEntries(formData.entries()));
     task.id = lastId;
     todoList.push(task);
-    // console.log(task);
     pageOutput(task);
     taskForm.reset();
 });
