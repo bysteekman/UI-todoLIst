@@ -42,8 +42,7 @@ let deleteElement = (event) => {
     const deleteButton = event.target;
     if (deleteButton.tagName === 'SPAN') {
         let taskNode = deleteButton.closest('.task')
-        let index = todoList.findIndex(item => task.id == item.id);
-        todoList.splice(index, 1);
+        deleteTask(taskNode.id);
         taskNode.remove();
     }
 };
@@ -66,7 +65,8 @@ let makeItemDone = (event) => {
     let checkbox = event.target;
     if (checkbox.tagName === 'INPUT' && checkbox.type === 'checkbox') {
         let taskNode = checkbox.closest('.task');
-        taskNode.classList.toggle('completed_task', checkbox.checked)
+        taskNode.classList.toggle('completed_task', checkbox.checked);
+        changeTaskStatus(taskNode.id, checkbox.checked);
         // const task = todoList.find(item => taskNode.id == item.id);
         // task.done = checkbox.checked;
     }
@@ -87,6 +87,26 @@ function createTask(task) {
         body: JSON.stringify(task)
     })
     .then(response => response.json());
+}
+
+function changeTaskStatus (id, done) {
+    let patchRequest = tasksEndpoint + '/' + id;
+    fetch(patchRequest, {
+        method: 'PATCH',
+        headers: {
+            'Content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            'done': done
+        })
+    });
+}
+
+function deleteTask (id) {
+    let deleteRequest = tasksEndpoint + '/' + id;
+    fetch(deleteRequest, {
+        method: 'DELETE'
+    });
 }
 
 function checkDateOutput (value){
