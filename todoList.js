@@ -1,6 +1,45 @@
 "use strict";
 
-let tasksEndpoint = "https://localhost:5001/api/lists/6/tasks";
+const tasksEndpoint = "https://localhost:5001/api/lists/6/tasks";
+
+const identity = (a) => a
+
+let taskApi = {
+    getAll() {
+        return fetch(`${tasksEndpoint}?all=true`)
+        .then(response => response.json())
+    },
+    createTask(task) {
+        return fetch(tasksEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify(task)
+        })
+        .then(res => res.json().then(res.ok ? identity : (err) => Promise.reject(err)))
+    },
+    deleteTask(id) {
+        return fetch(`${tasksEndpoint}/${id}`, {
+                method: 'DELETE'
+            })
+    },
+    changeTaskStatus (id, done) {
+        return fetch(`${tasksEndpoint}/1`, {
+            method: 'PATCH',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                'done': done
+            })
+        })
+    }
+};
+
+const alertError = (error) => {
+    alert(`Can't ${error} the task`);
+};
 
 class TodoItem {
     constructor(id, title, description, dueDate, done) {
@@ -33,6 +72,7 @@ var now = new Date();
 //     new TodoItem(2, 'Third task', 'Very important task, you must do it because you will be fired, this is simple task for you', new Date("2021-04-01"), false),
 // ]
 
+
 function convertInputDate (taskItem) {
     taskItem.dueDate = taskItem.dueDate ? new Date(taskItem.dueDate) : null;
     return taskItem;
@@ -41,9 +81,9 @@ function convertInputDate (taskItem) {
 let deleteElement = (event) => {
     const deleteButton = event.target;
     if (deleteButton.tagName === 'SPAN') {
-        let taskNode = deleteButton.closest('.task')
-        deleteTask(taskNode.id);
-        taskNode.remove();
+        let taskNode = deleteButton.closest('.task');
+        taskApi.deleteTask(taskNode.id)
+            .then(response => response.ok ? taskNode.remove() : alertError('delete'));
     }
 };
 
@@ -65,8 +105,10 @@ let makeItemDone = (event) => {
     let checkbox = event.target;
     if (checkbox.tagName === 'INPUT' && checkbox.type === 'checkbox') {
         let taskNode = checkbox.closest('.task');
-        taskNode.classList.toggle('completed_task', checkbox.checked);
-        changeTaskStatus(taskNode.id, checkbox.checked);
+
+        taskApi.changeTaskStatus(taskNode.id, checkbox.checked)
+            .then(res => res.ok ? taskNode.classList.toggle('completed_task', checkbox.checked) : alertError('change'));
+
         // const task = todoList.find(item => taskNode.id == item.id);
         // task.done = checkbox.checked;
     }
@@ -78,53 +120,12 @@ function pageOutput(item) {
     taskList.innerHTML += todoItemOutput(task);
 }
 
-function createTask(task) {
-    return fetch(tasksEndpoint, {
-        method: 'POST',
-        headers: {
-            'Content-type': 'application/json'
-        },
-        body: JSON.stringify(task)
-    })
-    .then(response => response.json())
-    .catch(createError);
-}
-
-function changeTaskStatus (id, done) {
-    let patchRequest = tasksEndpoint + '/' + id;
-    fetch(patchRequest, {
-        method: 'PATCH',
-        headers: {
-            'Content-type': 'application/json'
-        },
-        body: JSON.stringify({
-            'done': done
-        })
-    })
-    .catch(changeError);
-}
-
-function deleteTask (id) {
-    let deleteRequest = tasksEndpoint + '/' + id;
-    fetch(deleteRequest, {
-        method: 'DELETE'
-    });
-}
-
 function checkDateOutput (value){
     return value < 10 ? '0' + value : value;
 }
 
 function handleError () {
     listElement.innerHTML += 'Can`t load task list :(';
-}
-
-function changeError () {
-    alert('Can`t change task :(');
-}
-
-function createError () {
-    alert('Can`t create task');
 }
 
 function todoItemOutput(item) {
@@ -158,12 +159,12 @@ taskForm.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(taskForm);
     const task = new TodoItem(Object.fromEntries(formData.entries()));
-    createTask(task)
-        .then(pageOutput, alert)
-        .then(_ => taskForm.reset());
+    taskApi.createTask(task)
+        .then(pageOutput)
+        .then(_ => taskForm.reset())
+        .catch(error => alert(error.title));
 });
 
-fetch('https://localhost:5001/api/lists/6/tasks?all=true')
-    .then(response => response.json())
+taskApi.getAll()
     .then(tasks => tasks.forEach(pageOutput))
-    .catch(handleError);
+    .catch(handleError);;
